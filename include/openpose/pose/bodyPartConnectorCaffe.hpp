@@ -36,12 +36,15 @@ namespace op
 
         virtual void Forward_cpu(const std::vector<caffe::Blob<T>*>& bottom, Array<T>& poseKeypoints);
 
+#ifndef CPU_ONLY
         virtual void Forward_gpu(const std::vector<caffe::Blob<T>*>& bottom, const std::vector<caffe::Blob<T>*>& top, Array<T>& poseKeypoints);
+#endif
 
         virtual void Backward_cpu(const std::vector<caffe::Blob<T>*>& top, const std::vector<bool>& propagate_down, const std::vector<caffe::Blob<T>*>& bottom);
 
+#ifndef CPU_ONLY
         virtual void Backward_gpu(const std::vector<caffe::Blob<T>*>& top, const std::vector<bool>& propagate_down, const std::vector<caffe::Blob<T>*>& bottom);
-
+#endif
     private:
         PoseModel mPoseModel;
         int mInterMinAboveThreshold;

@@ -1,4 +1,6 @@
-#include <cuda_runtime_api.h>
+#ifndef CPU_ONLY
+    #include <cuda_runtime_api.h>
+#endif
 #include <openpose/core/enumClasses.hpp>
 #include <openpose/utilities/fastMath.hpp>
 #include <openpose/pose/poseExtractor.hpp>
@@ -102,7 +104,9 @@ namespace op
                 unsigned int totalOffset = 0u;
                 if (heatMapTypesHas(mHeatMapTypes, HeatMapType::Parts))
                 {
-                    cudaMemcpy(poseHeatMaps.getPtr(), getHeatMapGpuConstPtr(), volumeBodyParts * sizeof(float), cudaMemcpyDeviceToHost);
+                    #ifndef CPU_ONLY
+                        cudaMemcpy(poseheatMaps.getPtr(), getHeatMapGpuConstPtr(), volumeBodyParts * sizeof(float), cudaMemcpyDeviceToHost);
+                    #endif
                     // Change from [0,1] to [-1,1]
                     if (mHeatMapScaleMode == ScaleMode::PlusMinusOne)
                         for (auto i = 0u ; i < volumeBodyParts ; i++)
@@ -119,7 +123,9 @@ namespace op
                 }
                 if (heatMapTypesHas(mHeatMapTypes, HeatMapType::Background))
                 {
-                    cudaMemcpy(poseHeatMaps.getPtr() + totalOffset, getHeatMapGpuConstPtr() + volumeBodyParts, channelOffset * sizeof(float), cudaMemcpyDeviceToHost);
+                    #ifndef CPU_ONLY
+                        cudaMemcpy(poseHeatMaps.getPtr() + totalOffset, getHeatMapGpuConstPtr() + volumeBodyParts, channelOffset * sizeof(float), cudaMemcpyDeviceToHost);
+                    #endif
                     // Change from [0,1] to [-1,1]
                     auto* poseHeatMapsPtr = poseHeatMaps.getPtr() + totalOffset;
                     if (mHeatMapScaleMode == ScaleMode::PlusMinusOne)
@@ -137,7 +143,9 @@ namespace op
                 }
                 if (heatMapTypesHas(mHeatMapTypes, HeatMapType::PAFs))
                 {
-                    cudaMemcpy(poseHeatMaps.getPtr() + totalOffset, getHeatMapGpuConstPtr() + volumeBodyParts + channelOffset, volumePAFs * sizeof(float), cudaMemcpyDeviceToHost);
+                    #ifndef CPU_ONLY
+                        cudaMemcpy(poseHeatMaps.getPtr() + totalOffset, getHeatMapGpuConstPtr() + volumeBodyParts + channelOffset, volumePAFs * sizeof(float), cudaMemcpyDeviceToHost);
+                    #endif
                     // Change from [-1,1] to [0,1]. Note that PAFs are in [-1,1]
                     auto* poseHeatMapsPtr = poseHeatMaps.getPtr() + totalOffset;
                     if (mHeatMapScaleMode == ScaleMode::ZeroToOne)

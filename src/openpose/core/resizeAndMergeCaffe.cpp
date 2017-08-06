@@ -79,6 +79,7 @@ namespace op
         }
     }
 
+#ifndef CPU_ONLY
     template <typename T>
     void ResizeAndMergeCaffe<T>::Forward_gpu(const std::vector<caffe::Blob<T>*>& bottom, const std::vector<caffe::Blob<T>*>& top)
     {
@@ -91,6 +92,7 @@ namespace op
             error(e.what(), __LINE__, __FUNCTION__, __FILE__);
         }
     }
+#endif
 
     template <typename T>
     void ResizeAndMergeCaffe<T>::Backward_cpu(const std::vector<caffe::Blob<T>*>& top, const std::vector<bool>& propagate_down,
@@ -109,6 +111,7 @@ namespace op
         }
     }
 
+#ifndef CPU_ONLY
     template <typename T>
     void ResizeAndMergeCaffe<T>::Backward_gpu(const std::vector<caffe::Blob<T>*>& top, const std::vector<bool>& propagate_down,
                                               const std::vector<caffe::Blob<T>*>& bottom)
@@ -125,6 +128,7 @@ namespace op
             error(e.what(), __LINE__, __FUNCTION__, __FILE__);
         }
     }
+#endif
 
     INSTANTIATE_CLASS(ResizeAndMergeCaffe);
 }

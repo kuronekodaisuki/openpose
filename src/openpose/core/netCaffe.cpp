@@ -77,8 +77,10 @@ namespace op
             // Copy frame data to GPU memory
             if (inputData != nullptr)
             {
-                auto* gpuImagePtr = upCaffeNet->blobs().at(0)->mutable_gpu_data();
-                cudaMemcpy(gpuImagePtr, inputData, mNetInputMemory, cudaMemcpyHostToDevice);
+                #ifndef CPU_ONLY
+                    auto* gpuImagePtr = upCaffeNet->blobs().at(0)->mutable_gpu_data();
+                    cudaMemcpy(gpuImagePtr, inputData, mNetInputMemory, cudaMemcpyHostToDevice);
+                #endif
             }
             // Perform deep network forward pass
             upCaffeNet->ForwardFrom(0);

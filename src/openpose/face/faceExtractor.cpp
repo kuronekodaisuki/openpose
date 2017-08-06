@@ -124,8 +124,10 @@ namespace op
                         // cv::imshow("faceImage" + std::to_string(person), faceImage);
 
                         // 1. Caffe deep network
-                        auto* inputDataGpuPtr = spNet->getInputDataGpuPtr();
-                        cudaMemcpy(inputDataGpuPtr, mFaceImageCrop.getPtr(), mNetOutputSize.area() * 3 * sizeof(float), cudaMemcpyHostToDevice);
+                        #ifndef CPU_ONLY
+                            auto* inputDataGpuPtr = spNet->getInputDataGpuPtr();
+                            cudaMemcpy(inputDataGpuPtr, mFaceImageCrop.getPtr(), mNetOutputSize.area() * 3 * sizeof(float), cudaMemcpyHostToDevice);
+                        #endif
                         spNet->forwardPass();
      
                         // 2. Resize heat maps + merge different scales

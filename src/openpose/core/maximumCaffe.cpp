@@ -58,7 +58,7 @@ namespace op
     {
         try
         {
-            maximumGpu(top.at(0)->mutable_cpu_data(), bottom.at(0)->cpu_data(), mTopSize, mBottomSize);
+            maximumCpu(top.at(0)->mutable_cpu_data(), bottom.at(0)->cpu_data(), mTopSize, mBottomSize);
         }
         catch (const std::exception& e)
         {
@@ -66,6 +66,7 @@ namespace op
         }
     }
 
+#ifndef CPU_ONLY
     template <typename T>
     void MaximumCaffe<T>::Forward_gpu(const std::vector<caffe::Blob<T>*>& bottom, const std::vector<caffe::Blob<T>*>& top)
     {
@@ -78,6 +79,7 @@ namespace op
             error(e.what(), __LINE__, __FUNCTION__, __FILE__);
         }
     }
+#endif
 
     template <typename T>
     void MaximumCaffe<T>::Backward_cpu(const std::vector<caffe::Blob<T>*>& top, const std::vector<bool>& propagate_down, const std::vector<caffe::Blob<T>*>& bottom)
@@ -95,6 +97,7 @@ namespace op
         }
     }
 
+#ifndef CPU_ONLY
     template <typename T>
     void MaximumCaffe<T>::Backward_gpu(const std::vector<caffe::Blob<T>*>& top, const std::vector<bool>& propagate_down, const std::vector<caffe::Blob<T>*>& bottom)
     {
@@ -110,6 +113,7 @@ namespace op
             error(e.what(), __LINE__, __FUNCTION__, __FILE__);
         }
     }
+#endif
 
     INSTANTIATE_CLASS(MaximumCaffe);
 }
