@@ -8,14 +8,6 @@ namespace op
     {
         try
         {
-            //UNUSED(targetPtr);
-            //UNUSED(sourcePtr);
-            //UNUSED(targetSize);
-            //UNUSED(sourceSize);
-            //error("CPU version not completely implemented.", __LINE__, __FUNCTION__, __FILE__);
-
-            // TODO: ideally done, try, debug & compare to *.cu
-            // TODO: (maybe): remove thrust dependencies for computers without CUDA?
             const auto height = sourceSize[2];
             const auto width = sourceSize[3];
             const auto imageOffset = height * width;

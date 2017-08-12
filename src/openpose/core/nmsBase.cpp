@@ -7,52 +7,96 @@ namespace op
     {
         try
         {
-            //UNUSED(targetPtr);
-            //UNUSED(kernelPtr);
-            //UNUSED(sourcePtr);
-            //UNUSED(threshold);
-            //UNUSED(targetSize);
-            //UNUSED(sourceSize);
-            //error("CPU version not completely implemented.", __LINE__, __FUNCTION__, __FILE__);
+            UNUSED(kernelPtr);
 
-            // TODO: THIS CODE IS WORKING, BUT IT DOES NOT CONSIDER THE MAX NUMBER OF PEAKS
-            const int num = sourceSize[0];
-            const int oriSpatialHeight = sourceSize[2];
-            const int oriSpatialWidth = sourceSize[3];
+            const auto num = sourceSize[0];
+            const auto height = sourceSize[2];
+            const auto width = sourceSize[3];
             const auto channels = targetSize[1];
             const auto maxPeaks = targetSize[2]-1;
-
-            //T* dst_pointer = top->mutable_cpu_data();
-            //const T* const src_pointer = bottom->cpu_data();
-            const int offset2 = oriSpatialHeight * oriSpatialWidth;
-            const int offset2_dst = (maxPeaks+1)*2;
+            const auto imageOffset = height * width;
+            const auto offsetTarget = (maxPeaks+1)*targetSize[3];
 
             // stupid method
             for (int n = 0; n < num; n++)
             {
-                //assume only one channel
-                int peakCount = 0;
-                for (int y = 0; y < oriSpatialHeight; y++)
+                for (auto c = 0; c < channels; c++)
                 {
-                    for (int x = 0; x < oriSpatialWidth; x++)
+                    // log("channel: " + std::to_string(c));
+                    const auto offsetChannel = (n * channels + c);
+                    const auto* const sourcePtrOffsetted = sourcePtr + offsetChannel * imageOffset;
+                    auto* targetPtrOffsetted = targetPtr + offsetChannel * offsetTarget;
+
+                    int peakCount = 0;
+                    for (int y = 1; y < height-1; y++)
                     {
-                        const T value = sourcePtr[n * offset2 + y*oriSpatialWidth + x];
-                        if (value >= threshold)
+                        for (int x = 1; x < width-1; x++)
                         {
-                            const T top = (y == 0) ? 0 : sourcePtr[n * offset2 + (y-1)*oriSpatialWidth + x];
-                            const T bottom = (y == oriSpatialHeight - 1) ? 0 : sourcePtr[n * offset2 + (y+1)*oriSpatialWidth + x];
-                            const T left = (x == 0) ? 0 : sourcePtr[n * offset2 + y*oriSpatialWidth + (x-1)];
-                            const T right = (x == oriSpatialWidth - 1) ? 0 : sourcePtr[n * offset2 + y*oriSpatialWidth + (x+1)];
-                            if (value > top && value > bottom && value > left && value > right)
+                            const T value = sourcePtrOffsetted[y*width + x];
+                            if (value >= threshold)
                             {
-                                targetPtr[n*offset2_dst + (peakCount + 1) * 2] = x;
-                                targetPtr[n*offset2_dst + (peakCount + 1) * 2 + 1] = y;
-                                peakCount++;
+                                const auto top_left        = sourcePtrOffsetted[(y-1)*width + x-1];
+                                const auto top             = sourcePtrOffsetted[(y-1)*width + x];
+                                const auto top_right       = sourcePtrOffsetted[(y-1)*width + x+1];
+                                const auto left            = sourcePtrOffsetted[y*width + (x-1)];
+                                const auto right           = sourcePtrOffsetted[y*width + (x+1)];
+                                const auto bottom_left     = sourcePtrOffsetted[(y+1)*width + x-1];
+                                const auto bottom          = sourcePtrOffsetted[(y+1)*width + x];
+                                const auto bottom_right    = sourcePtrOffsetted[(y+1)*width + x+1];
+
+                                if (value > top_left && 
+                                    value > top && 
+                                    value > top_right && 
+                                    value > left && 
+                                    value > right && 
+                                    value > bottom_left && 
+                                    value > bottom && 
+                                    value > bottom_right)
+                                {
+                                    //means A[globalIdx] == A[globalIdx + 1] as the kernelPtr[globalIdx]-th repeat
+                                    const auto peakIndex = peakCount; //0-index
+                                    const auto peakLocX = x; 
+                                    const auto peakLocY = y;
+
+                                    if (peakIndex < maxPeaks) // limitation
+                                    {
+                                        T xAcc = 0.f;
+                                        T yAcc = 0.f;
+                                        T scoreAcc = 0.f;
+                                        for (auto dy = -3 ; dy < 4 ; dy++)
+                                        {
+                                            const auto py = peakLocY + dy;
+                                            if (0 <= py && py < height) // height = 368
+                                            {
+                                                for (auto dx = -3 ; dx < 4 ; dx++)
+                                                {
+                                                    const auto px = peakLocX + dx;
+                                                    if (0 <= px && px < width) // width = 656
+                                                    {
+                                                        const auto score = sourcePtrOffsetted[py * width + px];
+                                                        if (score > 0)
+                                                        {
+                                                            xAcc += px*score;
+                                                            yAcc += py*score;
+                                                            scoreAcc += score;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                
+                                        const auto outputIndex = (peakIndex + 1) * 3;
+                                        targetPtrOffsetted[outputIndex] = xAcc / scoreAcc;
+                                        targetPtrOffsetted[outputIndex + 1] = yAcc / scoreAcc;
+                                        targetPtrOffsetted[outputIndex + 2] = sourcePtr[peakLocY*width + peakLocX];
+                                        peakCount++;
+                                    }
+                                }
                             }
                         }
                     }
+                    targetPtrOffsetted[0] = peakCount;
                 }
-                targetPtr[n*offset2_dst] = peakCount;
             }
         }
         catch (const std::exception& e)
