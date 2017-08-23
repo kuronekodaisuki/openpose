@@ -24,9 +24,13 @@ namespace op
     {
         try
         {
+#ifndef CPU_ONLY
             // Initialize net
             caffe::Caffe::set_mode(caffe::Caffe::GPU);
             caffe::Caffe::SetDevice(mGpuId);
+#else
+            caffe::Caffe::set_mode(caffe::Caffe::CPU);
+#endif
             upCaffeNet.reset(new caffe::Net<float>{mCaffeProto, caffe::TEST});
             upCaffeNet->CopyTrainedLayersFrom(mCaffeTrainedModel);
             upCaffeNet->blobs()[0]->Reshape({mNetInputSize4D[0], mNetInputSize4D[1], mNetInputSize4D[2], mNetInputSize4D[3]});
@@ -77,10 +81,13 @@ namespace op
             // Copy frame data to GPU memory
             if (inputData != nullptr)
             {
-                #ifndef CPU_ONLY
+#ifndef CPU_ONLY
                     auto* gpuImagePtr = upCaffeNet->blobs().at(0)->mutable_gpu_data();
                     cudaMemcpy(gpuImagePtr, inputData, mNetInputMemory, cudaMemcpyHostToDevice);
-                #endif
+#else
+                    auto* cpuImagePtr = upCaffeNet->blobs().at(0)->mutable_cpu_data();
+                    memcpy(cpuImagePtr, inputData, mNetInputMemory);
+#endif
             }
             // Perform deep network forward pass
             upCaffeNet->ForwardFrom(0);

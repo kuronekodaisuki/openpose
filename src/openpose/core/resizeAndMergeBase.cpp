@@ -9,7 +9,7 @@ namespace op
                       const int targetHeight) 
     {
         //fill source
-        cv::Mat source(sourceWidth, sourceHeight, CV_32FC1);
+        cv::Mat source(sourceHeight, sourceWidth, CV_32FC1);
         float *_source = (float*)source.data;
         for (int y = 0; y < sourceHeight; y++) {
             for (int x = 0; x < sourceWidth; x++) {
@@ -34,7 +34,7 @@ namespace op
     void resizeKernelAndMerge(T* targetPtr, const T* const sourcePtr, const int sourceNumOffset, const int num, const T* scaleRatios,
                               const int sourceWidth, const int sourceHeight, const int targetWidth, const int targetHeight)
     {
-        cv::Mat target(targetWidth, targetHeight, CV_32FC1, cv::Scalar(0));
+        cv::Mat target(targetHeight, targetWidth, CV_32FC1, cv::Scalar(0));
         for (auto n = 0; n < num; n++)
         {
             const auto currentWidth = (int)(sourceWidth * scaleRatios[n]);
@@ -42,7 +42,7 @@ namespace op
             const T* const sourcePtrN = sourcePtr + n * sourceNumOffset;
 
             //fill source
-            cv::Mat source(currentWidth, currentHeight, CV_32FC1);
+            cv::Mat source(currentHeight, currentWidth, CV_32FC1);
             float *_source = (float*)source.data;
             for (int y = 0; y < currentHeight; y++) {
                 for (int x = 0; x < currentWidth; x++) {
@@ -52,7 +52,7 @@ namespace op
             
             // spatial resize
             cv::Mat targetN;
-            cv::resize(source, targetN, {targetWidth, targetHeight}, 0, 0, CV_INTER_CUBIC);
+            cv::resize(source, targetN, {targetWidth, targetHeight}, 0, 0, cv::INTER_CUBIC);
             target += targetN;
         }
         target /= num;

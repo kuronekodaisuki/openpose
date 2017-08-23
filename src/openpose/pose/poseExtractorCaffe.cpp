@@ -89,7 +89,7 @@ namespace op
                 spResizeAndMergeCaffe->Forward_gpu({spCaffeNetOutputBlob.get()}, {spHeatMapsBlob.get()});       // ~5ms
                 cudaCheck(__LINE__, __FUNCTION__, __FILE__);
             #else
-                error("ResizeAndMergeCaffe CPU version not implemented yet.", __LINE__, __FUNCTION__, __FILE__);
+                spResizeAndMergeCaffe->Forward_cpu({spCaffeNetOutputBlob.get()}, {spHeatMapsBlob.get()});       // ~5ms
             #endif
 
             // 3. Get peaks by Non-Maximum Suppression
@@ -98,7 +98,7 @@ namespace op
                 spNmsCaffe->Forward_gpu({spHeatMapsBlob.get()}, {spPeaksBlob.get()});                           // ~2ms
                 cudaCheck(__LINE__, __FUNCTION__, __FILE__);
             #else
-                error("NmsCaffe CPU version not implemented yet.", __LINE__, __FUNCTION__, __FILE__);
+                spNmsCaffe->Forward_cpu({spHeatMapsBlob.get()}, {spPeaksBlob.get()});                           // ~2ms
             #endif
 
             // Get scale net to output
