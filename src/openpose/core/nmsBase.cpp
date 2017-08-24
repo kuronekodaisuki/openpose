@@ -88,7 +88,7 @@ namespace op
                                         const auto outputIndex = (peakIndex + 1) * 3;
                                         targetPtrOffsetted[outputIndex] = xAcc / scoreAcc;
                                         targetPtrOffsetted[outputIndex + 1] = yAcc / scoreAcc;
-                                        targetPtrOffsetted[outputIndex + 2] = sourcePtr[peakLocY*width + peakLocX];
+                                        targetPtrOffsetted[outputIndex + 2] = sourcePtrOffsetted[peakLocY*width + peakLocX];
                                         peakCount++;
                                     }
                                 }
