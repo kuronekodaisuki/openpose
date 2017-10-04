@@ -1,5 +1,7 @@
-OpenPose
+OpenPose on CPU
 ====================================
+
+This repository is forked from author's code. The implementation is CPU version of OpenPose.
 
 ## Latest News
 - Jul 2017: **Windows**, New [**portable demo**](doc/installation.md#installation---demo) **and** [**easier library installation**](doc/installation.md#installation---library)!
